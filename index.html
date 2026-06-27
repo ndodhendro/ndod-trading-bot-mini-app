@@ -235,6 +235,7 @@ html, body {
 }
 
 .signal-tick-badge {
+  margin-left: auto;
   background: rgba(74,158,255,0.15);
   color: var(--accent);
   padding: 3px 8px;
@@ -249,6 +250,7 @@ html, body {
 }
 
 .signal-exit-badge {
+  margin-left: auto;
   padding: 3px 8px;
   border-radius: 10px;
   font-size: 11px;
@@ -385,13 +387,6 @@ html, body {
   line-height: 1.6;
 }
 
-.version-badge {
-  text-align: center;
-  margin-top: 24px;
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
 /* Section title */
 .section-title {
   font-size: 13px;
@@ -413,13 +408,15 @@ html, body {
 }
 
 .collapse-icon {
-  font-size: 14px;
+  font-size: 12px;
   color: var(--text-muted);
   transition: transform 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .collapsible-header.collapsed .collapse-icon {
-  transform: rotate(-90deg);
+  /* no transform — text already changes via JS */
 }
 
 .collapsible-body {
@@ -434,7 +431,7 @@ html, body {
   opacity: 0;
 }
 
-/* Refresh bar */
+/* Refresh bar (dashboard scanner status) */
 .refresh-bar {
   display: flex;
   align-items: center;
@@ -442,9 +439,59 @@ html, body {
   margin-bottom: 12px;
 }
 
-.last-updated {
+/* Funnel stock list (collapsible) */
+.funnel-stocks-toggle {
   font-size: 11px;
   color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 0 2px 110px;
+  margin-top: -8px;
+  margin-bottom: 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.funnel-stocks-list {
+  display: none;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 0 10px 110px;
+  margin-top: -4px;
+}
+
+.funnel-stocks-list.open {
+  display: flex;
+}
+
+.funnel-stock-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--bg-card);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+.funnel-stock-chip .logo-wrapper {
+  width: 16px;
+  height: 16px;
+}
+
+.funnel-stock-chip .logo-wrapper img {
+  width: 18px;
+  height: 18px;
+  margin: -1px;
+}
+
+.funnel-stock-chip .logo-fallback {
+  width: 16px;
+  height: 16px;
+  font-size: 8px;
+}
+
+.funnel-stock-chip span {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 /* Empty state */
@@ -476,24 +523,18 @@ html, body {
 <div class="app">
   <!-- Header -->
   <div class="header">
-    <h1>Ndod Trading Bot <span style="font-size:11px; font-weight:400; color:var(--text-muted);">v2.13.2</span></h1>
+    <h1>Ndod Trading Bot <span style="font-size:11px; font-weight:400; color:var(--text-muted);">v2.13.2</span> <span class="status-badge online" style="margin:0; padding:2px 8px; font-size:10px; vertical-align:middle;" id="scanner-status"><span class="status-dot"></span>Online</span></h1>
     <span class="last-updated" id="last-updated">Last Updated: --:--:-- <span class="refresh-countdown">(auto refresh: 1 min)</span></span>
   </div>
 
   <!-- Content Area -->
   <div class="content">
     <!-- Dashboard Tab -->
-    <div id="tab-dashboard" class="tab-page active">
-      <div class="refresh-bar">
-        <div class="status-badge online" style="margin:0;">
-          <span class="status-dot"></span>
-          Scanner Online
-        </div>
-      </div>
+    <div id="tab-dashboard" class="tab-page">
 
-      <div class="section-title">Funnel Hari Ini</div>
+      <div class="section-title">Proses Seleksi Hari Ini</div>
 
-      <div class="funnel-item">
+      <div class="funnel-item" id="funnel-tahap0">
         <span class="funnel-label">Tahap 0</span>
         <div class="funnel-bar-wrapper">
           <div class="funnel-bar" style="width: 0%; background: #6b6b80;"></div>
@@ -501,292 +542,94 @@ html, body {
         </div>
       </div>
 
-      <div class="funnel-item">
+      <div class="funnel-item" id="funnel-tahap1">
         <span class="funnel-label">Tahap 1</span>
         <div class="funnel-bar-wrapper">
-          <div class="funnel-bar" style="width: 45%; background: #4a9eff;"></div>
-          <span class="funnel-value">18</span>
+          <div class="funnel-bar" style="width: 0%; background: #4a9eff;"></div>
+          <span class="funnel-value">0</span>
         </div>
       </div>
 
-      <div class="funnel-item">
+      <div class="funnel-item" id="funnel-tahap2">
         <span class="funnel-label">Tahap 2</span>
         <div class="funnel-bar-wrapper">
-          <div class="funnel-bar" style="width: 20%; background: #7c4dff;"></div>
-          <span class="funnel-value">8</span>
+          <div class="funnel-bar" style="width: 0%; background: #7c4dff;"></div>
+          <span class="funnel-value">0</span>
         </div>
       </div>
 
-      <div class="funnel-item">
+      <div class="funnel-item" id="funnel-tahap3">
         <span class="funnel-label">Tahap 3</span>
         <div class="funnel-bar-wrapper">
-          <div class="funnel-bar" style="width: 12%; background: #ffab00;"></div>
-          <span class="funnel-value">5</span>
+          <div class="funnel-bar" style="width: 0%; background: #ffab00;"></div>
+          <span class="funnel-value">0</span>
         </div>
       </div>
 
-      <div class="funnel-item">
+      <div class="funnel-item" id="funnel-sinyal">
         <span class="funnel-label">Sinyal Dikirim</span>
         <div class="funnel-bar-wrapper">
-          <div class="funnel-bar" style="width: 7%; background: var(--green);"></div>
-          <span class="funnel-value">3</span>
+          <div class="funnel-bar" style="width: 0%; background: var(--green);"></div>
+          <span class="funnel-value">0</span>
         </div>
       </div>
 
       <div class="funnel-sub-group">
-        <div class="funnel-item sub">
+        <div class="funnel-item sub" id="funnel-sub-valid">
           <span class="funnel-label">┣ Masih Valid</span>
           <div class="funnel-bar-wrapper">
-            <div class="funnel-bar" style="width: 5%; background: var(--green);"></div>
-            <span class="funnel-value">1</span>
+            <div class="funnel-bar" style="width: 0%; background: var(--green);"></div>
+            <span class="funnel-value">0</span>
           </div>
         </div>
-        <div class="funnel-item sub">
+        <div class="funnel-item sub" id="funnel-sub-exit">
           <span class="funnel-label">┣ Sudah Exit</span>
           <div class="funnel-bar-wrapper">
-            <div class="funnel-bar" style="width: 5%; background: #ffab00;"></div>
-            <span class="funnel-value">1</span>
+            <div class="funnel-bar" style="width: 0%; background: #ffab00;"></div>
+            <span class="funnel-value">0</span>
           </div>
         </div>
-        <div class="funnel-item sub">
+        <div class="funnel-item sub" id="funnel-sub-expired">
           <span class="funnel-label">┗ Expired</span>
           <div class="funnel-bar-wrapper">
-            <div class="funnel-bar" style="width: 2%; background: var(--text-muted);"></div>
-            <span class="funnel-value">1</span>
+            <div class="funnel-bar" style="width: 0%; background: var(--text-muted);"></div>
+            <span class="funnel-value">0</span>
           </div>
         </div>
       </div>
 
-      <div class="funnel-item">
+      <div class="funnel-item" id="funnel-gagal">
         <span class="funnel-label">Gagal</span>
         <div class="funnel-bar-wrapper">
-          <div class="funnel-bar" style="width: 15%; background: var(--red);"></div>
-          <span class="funnel-value">6</span>
+          <div class="funnel-bar" style="width: 0%; background: var(--red);"></div>
+          <span class="funnel-value">0</span>
         </div>
       </div>
     </div>
 
     <!-- Signals Tab -->
-    <div id="tab-signals" class="tab-page">
-      <!-- Masih Valid Section - Collapsible -->
+    <div id="tab-signals" class="tab-page active">
       <div class="collapsible-header" data-target="signals-valid">
-        <span class="section-title" style="margin:0;">🟢 Masih Valid (3)</span>
+        <span class="section-title" style="margin:0;">🟢 Masih Valid (0)</span>
         <span class="collapse-icon">▾</span>
       </div>
       <div class="collapsible-body open" id="signals-valid">
-        <div class="signal-card">
-          <div class="signal-header">
-            <div class="logo-wrapper">
-              <img src="https://assets.stockbit.com/logos/companies/BBCA.png" 
-                   onerror="this.parentElement.innerHTML='<div class=\'logo-fallback\'>B</div>'" />
-            </div>
-            <span class="signal-stock-code">BBCA</span>
-            <span class="signal-tick-badge">Belum Entry · Sisa 2 tick ke Entry</span>
-          </div>
-          <div class="signal-grid">
-            <div class="signal-metric">
-              <div class="signal-metric-label">Entry</div>
-              <div class="signal-metric-value">9,825</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">SL</div>
-              <div class="signal-metric-value red">9,700</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">TP</div>
-              <div class="signal-metric-value green">10,075</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">Potensi Profit</div>
-              <div class="signal-metric-value green">+Rp 245.000</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">Potensi Loss</div>
-              <div class="signal-metric-value red">-Rp 122.500</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="signal-card">
-          <div class="signal-header">
-            <div class="logo-wrapper">
-              <img src="https://assets.stockbit.com/logos/companies/TLKM.png"
-                   onerror="this.parentElement.innerHTML='<div class=\'logo-fallback\'>T</div>'" />
-            </div>
-            <span class="signal-stock-code">TLKM</span>
-            <span class="signal-tick-badge">Belum Entry · Sisa 5 tick ke Entry</span>
-          </div>
-          <div class="signal-grid">
-            <div class="signal-metric">
-              <div class="signal-metric-label">Entry</div>
-              <div class="signal-metric-value">2,870</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">SL</div>
-              <div class="signal-metric-value red">2,820</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">TP</div>
-              <div class="signal-metric-value green">2,970</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">Potensi Profit</div>
-              <div class="signal-metric-value green">+Rp 95.000</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">Potensi Loss</div>
-              <div class="signal-metric-value red">-Rp 47.500</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="signal-card">
-          <div class="signal-header">
-            <div class="logo-wrapper">
-              <img src="https://assets.stockbit.com/logos/companies/INDF.png"
-                   onerror="this.parentElement.innerHTML='<div class=\'logo-fallback\'>I</div>'" />
-            </div>
-            <span class="signal-stock-code">INDF</span>
-            <span class="signal-tick-badge entered">Sudah Entry · Forced Sell: 15:45</span>
-          </div>
-          <div class="signal-grid">
-            <div class="signal-metric">
-              <div class="signal-metric-label">Entry</div>
-              <div class="signal-metric-value">6,800</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">SL</div>
-              <div class="signal-metric-value red">6,650</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">TP</div>
-              <div class="signal-metric-value green">7,100</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">Potensi Profit</div>
-              <div class="signal-metric-value green">+Rp 270.000</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">Potensi Loss</div>
-              <div class="signal-metric-value red">-Rp 135.000</div>
-            </div>
-          </div>
-        </div>
+        <div class="empty-state"><p>Memuat data...</p></div>
       </div>
 
-      <!-- Sudah Exit Section - Collapsible -->
       <div class="collapsible-header" data-target="signals-exited" style="margin-top: 20px;">
-        <span class="section-title" style="margin:0;">⚪ Sudah Exit (3)</span>
+        <span class="section-title" style="margin:0;">⚪ Sudah Exit (0)</span>
         <span class="collapse-icon">▾</span>
       </div>
       <div class="collapsible-body open" id="signals-exited">
-        <div class="signal-card exited">
-          <div class="signal-header">
-            <div class="logo-wrapper">
-              <img src="https://assets.stockbit.com/logos/companies/BMRI.png"
-                   onerror="this.parentElement.innerHTML='<div class=\'logo-fallback\'>B</div>'" />
-            </div>
-            <span class="signal-stock-code">BMRI</span>
-            <span class="signal-exit-badge tp">TP · 13:25</span>
-          </div>
-          <div class="signal-grid">
-            <div class="signal-metric">
-              <div class="signal-metric-label">Entry</div>
-              <div class="signal-metric-value">5,450</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">SL</div>
-              <div class="signal-metric-value red">5,350</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">TP</div>
-              <div class="signal-metric-value green">5,650</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">Profit</div>
-              <div class="signal-metric-value green">+Rp 180.000</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">Loss</div>
-              <div class="signal-metric-value red">-Rp 90.000</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="signal-card exited">
-          <div class="signal-header">
-            <div class="logo-wrapper">
-              <img src="https://assets.stockbit.com/logos/companies/ADRO.png"
-                   onerror="this.parentElement.innerHTML='<div class=\'logo-fallback\'>A</div>'" />
-            </div>
-            <span class="signal-stock-code">ADRO</span>
-            <span class="signal-exit-badge sl">SL · 14:10</span>
-          </div>
-          <div class="signal-grid">
-            <div class="signal-metric">
-              <div class="signal-metric-label">Entry</div>
-              <div class="signal-metric-value">2,340</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">SL</div>
-              <div class="signal-metric-value red">2,290</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">TP</div>
-              <div class="signal-metric-value green">2,440</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">Profit</div>
-              <div class="signal-metric-value green">+Rp 120.000</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">Loss</div>
-              <div class="signal-metric-value red">-Rp 60.000</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="signal-card exited">
-          <div class="signal-header">
-            <div class="logo-wrapper">
-              <img src="https://assets.stockbit.com/logos/companies/PGAS.png"
-                   onerror="this.parentElement.innerHTML='<div class=\'logo-fallback\'>P</div>'" />
-            </div>
-            <span class="signal-stock-code">PGAS</span>
-            <span class="signal-exit-badge timeout">Forced Sell · 15:45</span>
-          </div>
-          <div class="signal-grid">
-            <div class="signal-metric">
-              <div class="signal-metric-label">Entry</div>
-              <div class="signal-metric-value">1,480</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">SL</div>
-              <div class="signal-metric-value red">1,445</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">TP</div>
-              <div class="signal-metric-value green">1,550</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">Profit</div>
-              <div class="signal-metric-value green">+Rp 63.000</div>
-            </div>
-            <div class="signal-metric">
-              <div class="signal-metric-label">Loss</div>
-              <div class="signal-metric-value red">-Rp 31.500</div>
-            </div>
-          </div>
-        </div>
+        <div class="empty-state"><p>Memuat data...</p></div>
       </div>
     </div>
 
     <!-- Universe Tab -->
     <div id="tab-universe" class="tab-page">
-      <div class="section-title">Universe (40 Saham)</div>
-      <div class="universe-grid" id="universe-grid">
-        <!-- Generated by JS -->
-      </div>
+      <div class="section-title" id="universe-title">Universe (0 Saham)</div>
+      <div class="universe-grid" id="universe-grid"></div>
     </div>
 
     <!-- Help Tab -->
@@ -795,11 +638,11 @@ html, body {
 
       <div class="help-item">
         <div class="help-command">/signal</div>
-        <div class="help-desc">Lihat sinyal aktif hari ini yang belum expired.</div>
+        <div class="help-desc">Lihat daftar sinyal hari ini.</div>
       </div>
       <div class="help-item">
         <div class="help-command">/info</div>
-        <div class="help-desc">Ringkasan funnel hari ini — tahap OR, breakout, FVG, sinyal terkirim, gagal.</div>
+        <div class="help-desc">Ringkasan proses seleksi hari ini — tahap OR, breakout, FVG, sinyal terkirim, gagal.</div>
       </div>
       <div class="help-item">
         <div class="help-command">/equity [nominal]</div>
@@ -830,7 +673,7 @@ html, body {
         <p>Sinyal dihasilkan oleh algoritma otomatis berdasarkan data historis dan real-time. Sistem dapat mengalami error, delay, atau ketidakakuratan data. Selalu lakukan verifikasi mandiri sebelum mengambil keputusan.</p>
       </div>
       <div class="disclaimer-section">
-        <h3>Dokumentasi</h3>
+        <h3>Dokumentasi Strategi Trading</h3>
         <p><a href="https://ndodhendro.github.io/ndod-trading-bot-documentation/" target="_blank" style="color: var(--accent); text-decoration: none;">ndodhendro.github.io/ndod-trading-bot-documentation</a></p>
       </div>
     </div>
@@ -838,7 +681,7 @@ html, body {
 
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
-    <div class="nav-item active" data-tab="dashboard">
+    <div class="nav-item" data-tab="dashboard">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="3" width="7" height="7" rx="1"/>
         <rect x="14" y="3" width="7" height="4" rx="1"/>
@@ -847,7 +690,7 @@ html, body {
       </svg>
       <span>Dashboard</span>
     </div>
-    <div class="nav-item" data-tab="signals">
+    <div class="nav-item active" data-tab="signals">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M2 12h2m4-7v14m4-10v10m4-6v6m4-2v2"/>
       </svg>
@@ -880,65 +723,293 @@ html, body {
 </div>
 
 <script>
-// Tab navigation
+// ===== Configuration =====
+// Replace with your actual raw.githubusercontent.com URL after setting up the repo
+const DATA_URL = 'https://raw.githubusercontent.com/ndodhendro/ndod-trading-bot-mini-app/main/data/state.json';
+const REFRESH_INTERVAL = 60000; // 60 seconds
+
+// ===== Tab Navigation =====
+function switchTab(tabName) {
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  const navItem = document.querySelector(`.nav-item[data-tab="${tabName}"]`);
+  const tabPage = document.getElementById('tab-' + tabName);
+  if (navItem) navItem.classList.add('active');
+  if (tabPage) tabPage.classList.add('active');
+}
+
 document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
-    item.classList.add('active');
-    document.getElementById('tab-' + item.dataset.tab).classList.add('active');
+    switchTab(item.dataset.tab);
   });
 });
 
-// Collapsible sections
-document.querySelectorAll('.collapsible-header').forEach(header => {
-  header.addEventListener('click', () => {
-    const targetId = header.dataset.target;
-    const body = document.getElementById(targetId);
-    header.classList.toggle('collapsed');
-    body.classList.toggle('collapsed');
+// Hash-based tab routing: #signals, #dashboard, #universe, #help, #disclaimer
+(function() {
+  const hash = window.location.hash.replace('#', '');
+  if (hash && document.getElementById('tab-' + hash)) {
+    switchTab(hash);
+  }
+})();
+
+// ===== Collapsible Sections =====
+function initCollapsibles() {
+  document.querySelectorAll('.collapsible-header').forEach(header => {
+    header.removeEventListener('click', toggleCollapse);
+    header.addEventListener('click', toggleCollapse);
   });
-});
+}
+function toggleCollapse() {
+  const targetId = this.dataset.target;
+  const body = document.getElementById(targetId);
+  const icon = this.querySelector('.collapse-icon');
+  const count = this.dataset.count || '0';
+  this.classList.toggle('collapsed');
+  body.classList.toggle('collapsed');
+  if (icon) {
+    if (this.classList.contains('collapsed')) {
+      icon.textContent = '▸ Lihat saham (' + count + ')';
+    } else {
+      icon.textContent = '▾ Sembunyikan';
+    }
+  }
+}
 
-// Auto-polling every 60 seconds
-function fetchData() {
-  // Replace with real fetch from raw.githubusercontent.com
-  // fetch('https://raw.githubusercontent.com/user/repo/main/data/state.json')
-  //   .then(r => r.json())
-  //   .then(data => renderAll(data))
-  //   .catch(() => {});
+// ===== Helpers =====
+function formatRupiah(num) {
+  const abs = Math.abs(num);
+  const formatted = abs.toLocaleString('en-US');
+  return (num >= 0 ? '+' : '-') + formatted;
+}
 
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+function formatPrice(price) {
+  return price.toLocaleString('en-US');
+}
+
+function logoHtml(code) {
+  return `<div class="logo-wrapper"><img src="https://assets.stockbit.com/logos/companies/${code}.png" onerror="this.parentElement.innerHTML='<div class=\\'logo-fallback\\'>${code[0]}</div>'" /></div>`;
+}
+
+// ===== Render Functions =====
+function renderDashboard(data) {
+  const d = data.dashboard;
+  const total = d.universe_count || 40;
+
+  // Scanner status
+  const statusEl = document.getElementById('scanner-status');
+  const pushedAt = new Date(data.pushed_at);
+  const diffMs = Date.now() - pushedAt.getTime();
+  const isOnline = diffMs < 120000; // < 2 minutes = online
+  statusEl.className = 'status-badge ' + (isOnline ? 'online' : 'offline');
+  statusEl.style.cssText = 'margin:0; padding:2px 8px; font-size:10px; vertical-align:middle;';
+  statusEl.innerHTML = '<span class="status-dot"></span>' + (isOnline ? 'Online' : 'Offline');
+
+  // Funnel bars
+  const setBar = (id, value, pct, stocks) => {
+    const item = document.getElementById(id);
+    if (!item) return;
+    item.querySelector('.funnel-bar').style.width = pct + '%';
+    item.querySelector('.funnel-value').textContent = value;
+
+    // Remove existing stock toggle/list if any
+    const existingToggle = item.nextElementSibling;
+    if (existingToggle && existingToggle.classList.contains('funnel-stocks-toggle'))
+      existingToggle.remove();
+    const existingList = item.nextElementSibling;
+    if (existingList && existingList.classList.contains('funnel-stocks-list'))
+      existingList.remove();
+
+    // Add stock list if stocks exist
+    if (stocks && stocks.length > 0) {
+      const toggle = document.createElement('div');
+      toggle.className = 'funnel-stocks-toggle';
+      toggle.textContent = '▸ Lihat saham (' + stocks.length + ')';
+      toggle.onclick = () => {
+        const list = toggle.nextElementSibling;
+        if (list.classList.contains('open')) {
+          list.classList.remove('open');
+          toggle.textContent = '▸ Lihat saham (' + stocks.length + ')';
+        } else {
+          list.classList.add('open');
+          toggle.textContent = '▾ Sembunyikan';
+        }
+      };
+
+      const list = document.createElement('div');
+      list.className = 'funnel-stocks-list';
+      stocks.forEach(code => {
+        list.innerHTML += `<div class="funnel-stock-chip">${logoHtml(code)}<span>${code}</span></div>`;
+      });
+
+      item.insertAdjacentElement('afterend', toggle);
+      toggle.insertAdjacentElement('afterend', list);
+    }
+  };
+
+  const pct = (v) => Math.min(Math.round((v / total) * 100), 100);
+  setBar('funnel-tahap0', d.tahap_0, pct(d.tahap_0), d.stocks_tahap_0);
+  setBar('funnel-tahap1', d.tahap_1, pct(d.tahap_1), d.stocks_tahap_1);
+  setBar('funnel-tahap2', d.tahap_2, pct(d.tahap_2), d.stocks_tahap_2);
+  setBar('funnel-tahap3', d.tahap_3, pct(d.tahap_3), d.stocks_tahap_3);
+  setBar('funnel-sinyal', d.sinyal_dikirim, pct(d.sinyal_dikirim), null);
+  setBar('funnel-sub-valid', d.sinyal_masih_valid, pct(d.sinyal_masih_valid), d.stocks_sinyal_valid);
+  setBar('funnel-sub-exit', d.sinyal_sudah_exit, pct(d.sinyal_sudah_exit), d.stocks_sinyal_exit);
+  setBar('funnel-sub-expired', d.sinyal_expired, pct(d.sinyal_expired), d.stocks_sinyal_expired);
+  setBar('funnel-gagal', d.gagal, pct(d.gagal), d.stocks_gagal);
+}
+
+function renderSignals(data) {
+  // Get current user's Telegram ID (from WebApp API or fallback to first user in data)
+  const currentUserId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 
+    (data.signals_valid.length > 0 && data.signals_valid[0].per_user_lots.length > 0 
+      ? data.signals_valid[0].per_user_lots[0].user_id : 0);
+
+  function getUserLot(signal) {
+    const ul = signal.per_user_lots.find(u => u.user_id === currentUserId);
+    return ul || { lot: 0, profit: 0, loss: 0 };
+  }
+
+  // Valid signals
+  const validContainer = document.getElementById('signals-valid');
+  const validHeader = document.querySelector('[data-target="signals-valid"]');
+  validHeader.querySelector('.section-title').textContent = '🟢 Masih Valid (' + data.signals_valid.length + ')';
+  validHeader.dataset.count = data.signals_valid.length;
+  validHeader.querySelector('.collapse-icon').textContent = '▾ Sembunyikan';
+
+  let validHtml = '';
+  data.signals_valid.forEach(s => {
+    const badge = s.status === 'entered'
+      ? `<span class="signal-tick-badge entered">Sudah Entry · Jual Paksa (HAKI) di ${s.time_stop}</span>`
+      : `<span class="signal-tick-badge">Belum Entry · Sisa ${s.tick_to_entry} tick ke Entry</span>`;
+    const ul = getUserLot(s);
+
+    validHtml += `
+      <div class="signal-card">
+        <div class="signal-header">
+          ${logoHtml(s.stock_code)}
+          <span class="signal-stock-code">${s.stock_code}</span>
+          ${badge}
+        </div>
+        <div class="signal-grid">
+          <div class="signal-metric"><div class="signal-metric-label">Entry</div><div class="signal-metric-value">${formatPrice(s.entry_price)}</div></div>
+          <div class="signal-metric"><div class="signal-metric-label">SL</div><div class="signal-metric-value red">${formatPrice(s.sl_price)}</div></div>
+          <div class="signal-metric"><div class="signal-metric-label">TP</div><div class="signal-metric-value green">${formatPrice(s.tp_price)}</div></div>
+          <div class="signal-metric"><div class="signal-metric-label">Lot</div><div class="signal-metric-value">${ul.lot.toLocaleString('en-US')}</div></div>
+          <div class="signal-metric"><div class="signal-metric-label">Potensi Loss</div><div class="signal-metric-value red">${formatRupiah(ul.loss)}</div></div>
+          <div class="signal-metric"><div class="signal-metric-label">Potensi Profit</div><div class="signal-metric-value green">${formatRupiah(ul.profit)}</div></div>
+        </div>
+      </div>`;
+  });
+  validContainer.innerHTML = validHtml || '<div class="empty-state"><p>Belum ada sinyal valid hari ini</p></div>';
+
+  // Exited signals (sorted by exit_time desc — most recent first)
+  const sortedExited = [...data.signals_exited].sort((a, b) => b.exit_time.localeCompare(a.exit_time));
+  const exitContainer = document.getElementById('signals-exited');
+  const exitHeader = document.querySelector('[data-target="signals-exited"]');
+  exitHeader.querySelector('.section-title').textContent = '⚪ Sudah Exit (' + sortedExited.length + ')';
+  exitHeader.dataset.count = sortedExited.length;
+  exitHeader.querySelector('.collapse-icon').textContent = '▾ Sembunyikan';
+
+  let exitHtml = '';
+  sortedExited.forEach(s => {
+    let badgeClass, badgeText;
+    if (s.exit_type === 'TP') { badgeClass = 'tp'; badgeText = 'TP · ' + s.exit_time; }
+    else if (s.exit_type === 'SL') { badgeClass = 'sl'; badgeText = 'SL · ' + s.exit_time; }
+    else { badgeClass = 'timeout'; badgeText = 'Jual Paksa · ' + s.exit_time; }
+    const ul = getUserLot(s);
+
+    exitHtml += `
+      <div class="signal-card exited">
+        <div class="signal-header">
+          ${logoHtml(s.stock_code)}
+          <span class="signal-stock-code">${s.stock_code}</span>
+          <span class="signal-exit-badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <div class="signal-grid">
+          <div class="signal-metric"><div class="signal-metric-label">Entry</div><div class="signal-metric-value">${formatPrice(s.entry_price)}</div></div>
+          <div class="signal-metric"><div class="signal-metric-label">SL</div><div class="signal-metric-value red">${formatPrice(s.sl_price)}</div></div>
+          <div class="signal-metric"><div class="signal-metric-label">TP</div><div class="signal-metric-value green">${formatPrice(s.tp_price)}</div></div>
+          <div class="signal-metric"><div class="signal-metric-label">Lot</div><div class="signal-metric-value">${ul.lot.toLocaleString('en-US')}</div></div>
+          <div class="signal-metric"><div class="signal-metric-label">Loss</div><div class="signal-metric-value red">${formatRupiah(ul.loss)}</div></div>
+          <div class="signal-metric"><div class="signal-metric-label">Profit</div><div class="signal-metric-value green">${formatRupiah(ul.profit)}</div></div>
+        </div>
+      </div>`;
+  });
+  exitContainer.innerHTML = exitHtml || '<div class="empty-state"><p>Belum ada sinyal exit hari ini</p></div>';
+}
+
+function renderUniverse(data) {
+  const grid = document.getElementById('universe-grid');
+  const title = document.getElementById('universe-title');
+  title.textContent = 'Universe (' + data.universe.length + ' Saham)';
+
+  grid.innerHTML = '';
+  data.universe.forEach(code => {
+    const div = document.createElement('div');
+    div.className = 'universe-item';
+    div.innerHTML = `${logoHtml(code)}<span>${code}</span>`;
+    // Adjust logo size for universe grid
+    const wrapper = div.querySelector('.logo-wrapper');
+    wrapper.style.width = '40px';
+    wrapper.style.height = '40px';
+    const img = wrapper.querySelector('img');
+    if (img) { img.style.width = '44px'; img.style.height = '44px'; }
+    grid.appendChild(div);
+  });
+}
+
+function renderAll(data) {
+  // Validate user access — block if user_id not found in data
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const currentUserId = tgUser?.id || 0;
+
+  if (currentUserId && data.signals_valid.length > 0) {
+    const allUserIds = data.signals_valid[0].per_user_lots.map(u => u.user_id);
+    if (!allUserIds.includes(currentUserId)) {
+      document.querySelector('.content').innerHTML = `
+        <div class="empty-state" style="padding-top:60px;">
+          <p style="font-size:15px; margin-bottom:12px;">⛔ Akses Ditolak</p>
+          <p>User ID kamu (<code>${currentUserId}</code>) tidak terdaftar di sistem.</p>
+          <p style="margin-top:12px;">Kemungkinan penyebab:</p>
+          <p>• Belum melakukan /register di chat bot</p>
+          <p>• Belum melakukan /consent di chat bot</p>
+          <p>• Belum set equity via /equity</p>
+          <p>• Akun dinonaktifkan oleh admin</p>
+          <p style="margin-top:12px;">Hubungi admin untuk bantuan.</p>
+        </div>`;
+      return;
+    }
+  }
+
+  renderDashboard(data);
+  renderSignals(data);
+  renderUniverse(data);
+  initCollapsibles();
+
+  // Update last-updated from pushed_at
+  const pushedAt = new Date(data.pushed_at);
+  const timeStr = pushedAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   document.getElementById('last-updated').childNodes[0].textContent = 'Last Updated: ' + timeStr + ' ';
+}
+
+// ===== Data Fetching =====
+function fetchData() {
+  fetch(DATA_URL + '?t=' + Date.now())
+    .then(r => r.json())
+    .then(data => renderAll(data))
+    .catch(err => {
+      console.warn('Fetch failed:', err);
+      // Mark offline if fetch fails
+      const statusEl = document.getElementById('scanner-status');
+      statusEl.className = 'status-badge offline';
+      statusEl.innerHTML = '<span class="status-dot"></span>Scanner Offline';
+    });
 }
 
 // Initial fetch + interval
 fetchData();
-setInterval(fetchData, 60000);
-
-// Universe dummy data
-const universeStocks = [
-  'AADI','ACES','ADRO','AKRA','AMMN','AMRT','ANTM','ARTO',
-  'ASII','BBCA','BBNI','BBRI','BBTN','BMRI','BRPT','BRIS',
-  'CPIN','EMTK','ESSA','EXCL','GGRM','GOTO','HRUM','ICBP',
-  'INCO','INDF','INKP','ITMG','JPFA','KLBF','MAPI','MDKA',
-  'MEDC','MIKA','PGAS','SMGR','TBIG','TLKM','TOWR','UNTR'
-];
-
-const grid = document.getElementById('universe-grid');
-universeStocks.forEach(code => {
-  const div = document.createElement('div');
-  div.className = 'universe-item';
-  div.innerHTML = `
-    <div class="logo-wrapper">
-      <img src="https://assets.stockbit.com/logos/companies/${code}.png"
-           onerror="this.parentElement.innerHTML='<div class=\\'logo-fallback\\'>${code[0]}</div>'" />
-    </div>
-    <span>${code}</span>
-  `;
-  grid.appendChild(div);
-});
+setInterval(fetchData, REFRESH_INTERVAL);
+initCollapsibles();
 </script>
 </body>
 </html>
