@@ -754,11 +754,33 @@ document.querySelectorAll('.nav-item').forEach(item => {
   });
 });
 
-// Hash-based tab routing: #signals, #dashboard, #universe, #help, #disclaimer
+// Tab routing: supports hash (#dashboard), query param (?tab=dashboard), and tgWebAppStartParam
 (function() {
+  let tab = '';
+
+  // 1. Check URL hash (e.g. #dashboard)
   const hash = window.location.hash.replace('#', '');
-  if (hash && document.getElementById('tab-' + hash)) {
-    switchTab(hash);
+  if (hash) tab = hash;
+
+  // 2. Check query/hash params (Telegram sometimes appends tgWebAppStartParam in hash)
+  if (!tab) {
+    const hashParams = new URLSearchParams(window.location.hash.replace('#', '').split('?')[1] || '');
+    tab = hashParams.get('tgWebAppStartParam') || '';
+  }
+
+  // 3. Check URL search params (?tab=xxx)
+  if (!tab) {
+    const searchParams = new URLSearchParams(window.location.search);
+    tab = searchParams.get('tab') || '';
+  }
+
+  // 4. Check Telegram WebApp start_param
+  if (!tab && window.Telegram?.WebApp?.initDataUnsafe?.start_param) {
+    tab = window.Telegram.WebApp.initDataUnsafe.start_param;
+  }
+
+  if (tab && document.getElementById('tab-' + tab)) {
+    switchTab(tab);
   }
 })();
 
