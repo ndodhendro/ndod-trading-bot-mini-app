@@ -444,52 +444,50 @@ html, body {
   font-size: 11px;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 0 0 2px 110px;
-  margin-top: -8px;
+  padding: 2px 0;
+  margin-top: -4px;
   margin-bottom: 8px;
   -webkit-tap-highlight-color: transparent;
 }
 
 .funnel-stocks-list {
   display: none;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 0 0 10px 110px;
-  margin-top: -4px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px 6px;
+  padding: 0 0 12px 0;
+  margin-top: -2px;
 }
 
 .funnel-stocks-list.open {
-  display: flex;
+  display: grid;
 }
 
 .funnel-stock-chip {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 3px;
-  background: var(--bg-card);
-  border-radius: 6px;
-  padding: 2px 6px;
+  gap: 4px;
 }
 
 .funnel-stock-chip .logo-wrapper {
-  width: 16px;
-  height: 16px;
+  width: 32px;
+  height: 32px;
 }
 
 .funnel-stock-chip .logo-wrapper img {
-  width: 18px;
-  height: 18px;
-  margin: -1px;
+  width: 36px;
+  height: 36px;
+  margin: -2px;
 }
 
 .funnel-stock-chip .logo-fallback {
-  width: 16px;
-  height: 16px;
-  font-size: 8px;
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
 }
 
 .funnel-stock-chip span {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--text-secondary);
 }
@@ -804,12 +802,22 @@ function renderDashboard(data) {
   statusEl.style.cssText = 'margin:0; padding:2px 8px; font-size:10px; vertical-align:middle;';
   statusEl.innerHTML = '<span class="status-dot"></span>' + (isOnline ? 'Online' : 'Offline');
 
+  // When offline, override dashboard: all stocks go to Tahap 0 (no scanning active)
+  const dash = isOnline ? d : {
+    tahap_0: total, tahap_1: 0, tahap_2: 0, tahap_3: 0,
+    sinyal_dikirim: 0, sinyal_masih_valid: 0, sinyal_sudah_exit: 0, sinyal_expired: 0,
+    gagal: 0, universe_count: total,
+    stocks_tahap_0: data.universe || [], stocks_tahap_1: [], stocks_tahap_2: [],
+    stocks_tahap_3: [], stocks_sinyal_valid: [], stocks_sinyal_exit: [],
+    stocks_sinyal_expired: [], stocks_gagal: []
+  };
+
   // Funnel bars
   const setBar = (id, value, pct, stocks) => {
     const item = document.getElementById(id);
     if (!item) return;
     item.querySelector('.funnel-bar').style.width = pct + '%';
-    item.querySelector('.funnel-value').textContent = value;
+    item.querySelector('.funnel-value').textContent = (value != null) ? value : 0;
 
     // Remove existing stock toggle/list if any
     const existingToggle = item.nextElementSibling;
@@ -846,16 +854,16 @@ function renderDashboard(data) {
     }
   };
 
-  const pct = (v) => Math.min(Math.round((v / total) * 100), 100);
-  setBar('funnel-tahap0', d.tahap_0, pct(d.tahap_0), d.stocks_tahap_0);
-  setBar('funnel-tahap1', d.tahap_1, pct(d.tahap_1), d.stocks_tahap_1);
-  setBar('funnel-tahap2', d.tahap_2, pct(d.tahap_2), d.stocks_tahap_2);
-  setBar('funnel-tahap3', d.tahap_3, pct(d.tahap_3), d.stocks_tahap_3);
-  setBar('funnel-sinyal', d.sinyal_dikirim, pct(d.sinyal_dikirim), null);
-  setBar('funnel-sub-valid', d.sinyal_masih_valid, pct(d.sinyal_masih_valid), d.stocks_sinyal_valid);
-  setBar('funnel-sub-exit', d.sinyal_sudah_exit, pct(d.sinyal_sudah_exit), d.stocks_sinyal_exit);
-  setBar('funnel-sub-expired', d.sinyal_expired, pct(d.sinyal_expired), d.stocks_sinyal_expired);
-  setBar('funnel-gagal', d.gagal, pct(d.gagal), d.stocks_gagal);
+  const pct = (v) => Math.min(Math.round(((v || 0) / total) * 100), 100);
+  setBar('funnel-tahap0', dash.tahap_0, pct(dash.tahap_0), dash.stocks_tahap_0);
+  setBar('funnel-tahap1', dash.tahap_1, pct(dash.tahap_1), dash.stocks_tahap_1);
+  setBar('funnel-tahap2', dash.tahap_2, pct(dash.tahap_2), dash.stocks_tahap_2);
+  setBar('funnel-tahap3', dash.tahap_3, pct(dash.tahap_3), dash.stocks_tahap_3);
+  setBar('funnel-sinyal', dash.sinyal_dikirim, pct(dash.sinyal_dikirim), null);
+  setBar('funnel-sub-valid', dash.sinyal_masih_valid, pct(dash.sinyal_masih_valid), dash.stocks_sinyal_valid);
+  setBar('funnel-sub-exit', dash.sinyal_sudah_exit, pct(dash.sinyal_sudah_exit), dash.stocks_sinyal_exit);
+  setBar('funnel-sub-expired', dash.sinyal_expired, pct(dash.sinyal_expired), dash.stocks_sinyal_expired);
+  setBar('funnel-gagal', dash.gagal, pct(dash.gagal), dash.stocks_gagal);
 }
 
 function renderSignals(data) {
@@ -879,7 +887,7 @@ function renderSignals(data) {
   let validHtml = '';
   data.signals_valid.forEach(s => {
     const badge = s.status === 'entered'
-      ? `<span class="signal-tick-badge entered">Sudah Entry · Jual Paksa (HAKI) di ${s.time_stop}</span>`
+      ? `<span class="signal-tick-badge entered">Sudah Entry · Time Stop (HAKI) di ${s.time_stop}</span>`
       : `<span class="signal-tick-badge">Belum Entry · Sisa ${s.tick_to_entry} tick ke Entry</span>`;
     const ul = getUserLot(s);
 
@@ -915,7 +923,7 @@ function renderSignals(data) {
     let badgeClass, badgeText;
     if (s.exit_type === 'TP') { badgeClass = 'tp'; badgeText = 'TP · ' + s.exit_time; }
     else if (s.exit_type === 'SL') { badgeClass = 'sl'; badgeText = 'SL · ' + s.exit_time; }
-    else { badgeClass = 'timeout'; badgeText = 'Jual Paksa · ' + s.exit_time; }
+    else { badgeClass = 'timeout'; badgeText = 'Time Stop · ' + s.exit_time; }
     const ul = getUserLot(s);
 
     exitHtml += `
@@ -986,10 +994,11 @@ function renderAll(data) {
   renderUniverse(data);
   initCollapsibles();
 
-  // Update last-updated from pushed_at
+  // Update last-updated from pushed_at (include date)
   const pushedAt = new Date(data.pushed_at);
+  const dateStr = pushedAt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
   const timeStr = pushedAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  document.getElementById('last-updated').childNodes[0].textContent = 'Last Updated: ' + timeStr + ' ';
+  document.getElementById('last-updated').childNodes[0].textContent = 'Last Updated: ' + dateStr + ' ' + timeStr + ' ';
 }
 
 // ===== Data Fetching =====
