@@ -632,27 +632,39 @@ html, body {
 
     <!-- Help Tab -->
     <div id="tab-help" class="tab-page">
-      <div class="section-title">Telegram Commands</div>
+      <div class="section-title">Daftar Command Bot</div>
 
       <div class="help-item">
-        <div class="help-command">/signal</div>
-        <div class="help-desc">Lihat daftar sinyal hari ini.</div>
-      </div>
-      <div class="help-item">
         <div class="help-command">/info</div>
-        <div class="help-desc">Ringkasan proses seleksi hari ini — tahap OR, breakout, FVG, sinyal terkirim, gagal.</div>
+        <div class="help-desc">Ringkasan progress scanner hari ini. Berapa saham lolos tiap tahap, aktif, exit, gagal.</div>
       </div>
       <div class="help-item">
-        <div class="help-command">/equity [nominal]</div>
-        <div class="help-desc">Update equity kamu. Contoh: /equity 50000000. Lot dihitung berdasarkan equity ini.</div>
+        <div class="help-command">/signal</div>
+        <div class="help-desc">Cek apakah sinyal yang sudah diberikan masih valid. Untuk kalkulasi ulang jumlah Lot pada sinyal ketika /equity.</div>
       </div>
       <div class="help-item">
-        <div class="help-command">/status</div>
-        <div class="help-desc">Cek status scanner (online/offline) dan waktu terakhir aktif.</div>
+        <div class="help-command">/register &lt;nama&gt; &lt;equity&gt;</div>
+        <div class="help-desc">Daftar sebagai penerima sinyal. Contoh: /register NdodHendro 80000000</div>
+      </div>
+      <div class="help-item">
+        <div class="help-command">/consent</div>
+        <div class="help-desc">Setuju disclaimer & aktifkan penerimaan sinyal. Wajib setelah /register.</div>
+      </div>
+      <div class="help-item">
+        <div class="help-command">/equity &lt;nominal&gt;</div>
+        <div class="help-desc">Update modal. Lot dihitung berdasarkan equity ini. Contoh: /equity 88000000</div>
+      </div>
+      <div class="help-item">
+        <div class="help-command">/stop</div>
+        <div class="help-desc">Non-aktifkan penerimaan sinyal. Aktifkan kembali dengan /consent.</div>
+      </div>
+      <div class="help-item">
+        <div class="help-command">/feedback &lt;pesan&gt;</div>
+        <div class="help-desc">Kirim feedback atau saran ke admin. Contoh: /feedback Sinyal terlalu banyak, saya bingung pilih yang mana!</div>
       </div>
       <div class="help-item">
         <div class="help-command">/help</div>
-        <div class="help-desc">Tampilkan daftar command yang tersedia.</div>
+        <div class="help-desc">Menampilkan daftar command bot.</div>
       </div>
     </div>
 
@@ -949,14 +961,18 @@ function renderSignals(data) {
 function renderUniverse(data) {
   const grid = document.getElementById('universe-grid');
   const title = document.getElementById('universe-title');
-  title.textContent = 'Universe (' + data.universe.length + ' Saham)';
+  const universe = data.universe || [];
+  title.textContent = 'Universe (' + (universe.length || data.dashboard?.universe_count || 0) + ' Saham)';
 
   grid.innerHTML = '';
-  data.universe.forEach(code => {
+  if (universe.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>Data universe tidak tersedia saat offline</p></div>';
+    return;
+  }
+  universe.forEach(code => {
     const div = document.createElement('div');
     div.className = 'universe-item';
     div.innerHTML = `${logoHtml(code)}<span>${code}</span>`;
-    // Adjust logo size for universe grid
     const wrapper = div.querySelector('.logo-wrapper');
     wrapper.style.width = '40px';
     wrapper.style.height = '40px';
@@ -1002,16 +1018,27 @@ function renderAll(data) {
 }
 
 // ===== Data Fetching =====
+let lastData = null; // Cache last successful fetch
+
 function fetchData() {
   fetch(DATA_URL + '?t=' + Date.now())
     .then(r => r.json())
-    .then(data => renderAll(data))
+    .then(data => {
+      lastData = data;
+      renderAll(data);
+    })
     .catch(err => {
       console.warn('Fetch failed:', err);
-      // Mark offline if fetch fails
-      const statusEl = document.getElementById('scanner-status');
-      statusEl.className = 'status-badge offline';
-      statusEl.innerHTML = '<span class="status-dot"></span>Offline';
+      // If we have cached data, re-render as offline
+      if (lastData) {
+        renderAll(lastData);
+      } else {
+        // No data ever fetched — just mark offline
+        const statusEl = document.getElementById('scanner-status');
+        statusEl.className = 'status-badge offline';
+        statusEl.style.cssText = 'margin:0; padding:2px 8px; font-size:10px; vertical-align:middle;';
+        statusEl.innerHTML = '<span class="status-dot"></span>Offline';
+      }
     });
 }
 
