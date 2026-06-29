@@ -1041,7 +1041,7 @@ function renderAll(data) {
   // Update last-updated from pushed_at (include date)
   const pushedAt = new Date(data.pushed_at);
   const dateStr = pushedAt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-  const timeStr = pushedAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const timeStr = pushedAt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   document.getElementById('last-updated').childNodes[0].textContent = 'Last Updated: ' + dateStr + ' ' + timeStr + ' ';
 }
 
