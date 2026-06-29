@@ -922,7 +922,9 @@ function renderSignals(data) {
   let validHtml = '';
   data.signals_valid.forEach(s => {
     const badge = s.status === 'entered'
-      ? `<span class="signal-tick-badge entered">Sudah Entry · Time Stop (HAKI) di ${s.time_stop}</span>`
+      ? (s.time_stop
+        ? `<span class="signal-tick-badge entered">Sudah Entry · Time Stop (HAKI) di ${s.time_stop}</span>`
+        : `<span class="signal-tick-badge entered">Sudah Entry</span>`)
       : `<span class="signal-tick-badge">Belum Entry · Sisa ${s.tick_to_entry} tick ke Entry</span>`;
     const ul = getUserLot(s);
 
