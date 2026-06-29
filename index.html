@@ -838,11 +838,11 @@ function renderDashboard(data) {
 
   // When offline, override dashboard: all stocks go to Tahap 0 (no scanning active)
   const dash = isOnline ? d : {
-    tahap_0: total, tahap_1: 0, tahap_2: 0, tahap_3: 0,
+    tahap0: total, tahap1: 0, tahap2: 0, tahap3: 0,
     sinyal_dikirim: 0, sinyal_masih_valid: 0, sinyal_sudah_exit: 0, sinyal_expired: 0,
     gagal: 0, universe_count: total,
-    stocks_tahap_0: data.universe || [], stocks_tahap_1: [], stocks_tahap_2: [],
-    stocks_tahap_3: [], stocks_sinyal_valid: [], stocks_sinyal_exit: [],
+    stocks_tahap0: data.universe || [], stocks_tahap1: [], stocks_tahap2: [],
+    stocks_tahap3: [], stocks_sinyal_valid: [], stocks_sinyal_exit: [],
     stocks_sinyal_expired: [], stocks_gagal: []
   };
 
@@ -889,10 +889,10 @@ function renderDashboard(data) {
   };
 
   const pct = (v) => Math.min(Math.round(((v || 0) / total) * 100), 100);
-  setBar('funnel-tahap0', dash.tahap_0, pct(dash.tahap_0), dash.stocks_tahap_0);
-  setBar('funnel-tahap1', dash.tahap_1, pct(dash.tahap_1), dash.stocks_tahap_1);
-  setBar('funnel-tahap2', dash.tahap_2, pct(dash.tahap_2), dash.stocks_tahap_2);
-  setBar('funnel-tahap3', dash.tahap_3, pct(dash.tahap_3), dash.stocks_tahap_3);
+  setBar('funnel-tahap0', dash.tahap0, pct(dash.tahap0), dash.stocks_tahap0);
+  setBar('funnel-tahap1', dash.tahap1, pct(dash.tahap1), dash.stocks_tahap1);
+  setBar('funnel-tahap2', dash.tahap2, pct(dash.tahap2), dash.stocks_tahap2);
+  setBar('funnel-tahap3', dash.tahap3, pct(dash.tahap3), dash.stocks_tahap3);
   setBar('funnel-sinyal', dash.sinyal_dikirim, pct(dash.sinyal_dikirim), null);
   setBar('funnel-sub-valid', dash.sinyal_masih_valid, pct(dash.sinyal_masih_valid), dash.stocks_sinyal_valid);
   setBar('funnel-sub-exit', dash.sinyal_sudah_exit, pct(dash.sinyal_sudah_exit), dash.stocks_sinyal_exit);
