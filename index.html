@@ -523,7 +523,7 @@ html, body {
   <!-- Header -->
   <div class="header">
     <h1>Ndod Trading Bot <span style="font-size:11px; font-weight:400; color:var(--text-muted);">v2.15.0</span> <span class="status-badge online" style="margin:0; padding:2px 8px; font-size:10px; vertical-align:middle;" id="scanner-status"><span class="status-dot"></span>Online</span></h1>
-    <span class="last-updated" id="last-updated">Last Updated: --:--:-- <span class="refresh-countdown">(auto refresh: 1 min)</span></span>
+    <span class="last-updated" id="last-updated">Last Updated: --:--:-- <span class="refresh-countdown">(auto refresh: 30s)</span></span>
   </div>
 
   <!-- Content Area -->
@@ -737,7 +737,7 @@ html, body {
 // ===== Configuration =====
 // Cloudflare R2 public URL — replace with your R2 public bucket URL or custom domain
 const DATA_URL = 'https://pub-9fca44bec64e4a24bcadd4f5bce7d220.r2.dev/state.json';
-const REFRESH_INTERVAL = 60000; // 60 seconds
+const REFRESH_INTERVAL = 30000; // 30 seconds
 
 // ===== Tab Navigation =====
 function switchTab(tabName) {
