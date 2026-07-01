@@ -427,6 +427,13 @@ html, body {
   opacity: 1;
 }
 
+/* Signal lists: no height cap — 2000px clipped ~13 cards while JSON had all items */
+#signals-valid:not(.collapsed),
+#signals-exited:not(.collapsed) {
+  max-height: none;
+  overflow: visible;
+}
+
 .collapsible-body.collapsed {
   max-height: 0;
   opacity: 0;
@@ -901,6 +908,12 @@ function renderDashboard(data) {
   setBar('funnel-gagal', dash.gagal, pct(dash.gagal), dash.stocks_gagal);
 }
 
+function parseExitMinutes(exitTime) {
+  const m = String(exitTime).match(/(\d{1,2}):(\d{2})/);
+  if (!m) return 0;
+  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+}
+
 function renderSignals(data) {
   // Get current user's Telegram ID (from WebApp API or fallback to first user in data)
   const currentUserId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 
@@ -948,7 +961,8 @@ function renderSignals(data) {
   validContainer.innerHTML = validHtml || '<div class="empty-state"><p>Belum ada sinyal valid hari ini</p></div>';
 
   // Exited signals (sorted by exit_time desc — most recent first)
-  const sortedExited = [...data.signals_exited].sort((a, b) => b.exit_time.localeCompare(a.exit_time));
+  const sortedExited = [...data.signals_exited].sort(
+    (a, b) => parseExitMinutes(b.exit_time) - parseExitMinutes(a.exit_time));
   const exitContainer = document.getElementById('signals-exited');
   const exitHeader = document.querySelector('[data-target="signals-exited"]');
   exitHeader.querySelector('.section-title').textContent = '⚪ Sudah Exit (' + sortedExited.length + ')';
