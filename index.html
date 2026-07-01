@@ -1025,9 +1025,9 @@ function renderSignals(data) {
             ${statusBadge}
           </div>
           ${signalMetric('Entry', formatPrice(s.entry_price))}
+          ${signalMetric('Lot', ul.lot.toLocaleString('en-US'))}
           ${signalMetric('SL', formatPrice(s.sl_price), 'red')}
           ${signalMetric('TP', formatPrice(s.tp_price), 'green')}
-          ${signalMetric('Lot', ul.lot.toLocaleString('en-US'))}
         </div>
       </div>`;
   });
@@ -1061,9 +1061,9 @@ function renderSignals(data) {
             <span class="signal-exit-badge ${badgeClass}">${badgeText}</span>
           </div>
           ${signalMetric('Entry', formatPrice(s.entry_price))}
+          ${signalMetric('Lot', ul.lot.toLocaleString('en-US'))}
           ${signalMetric('SL', formatPrice(s.sl_price), 'red')}
           ${signalMetric('TP', formatPrice(s.tp_price), 'green')}
-          ${signalMetric('Lot', ul.lot.toLocaleString('en-US'))}
         </div>
       </div>`;
   });
