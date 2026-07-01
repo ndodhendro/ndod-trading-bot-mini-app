@@ -187,11 +187,112 @@ html, body {
 
 /* Signal Cards — compact single row per stock */
 .signal-card {
+  position: relative;
   background: var(--bg-card);
   border-radius: 10px;
   padding: 8px 10px;
   margin-bottom: 8px;
   border: 1px solid var(--border);
+}
+
+.signal-card.has-exit-footer {
+  padding-bottom: 42px;
+}
+
+.signal-card.exited.has-exit-footer {
+  padding-bottom: 42px;
+}
+
+.signal-exit-footer-left {
+  position: absolute;
+  bottom: 8px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
+  max-width: 52%;
+}
+
+.signal-exit-corner-badge {
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.signal-exit-corner-badge.tp {
+  background: rgba(0,200,83,0.2);
+  color: var(--green);
+}
+
+.signal-exit-corner-badge.sl {
+  background: rgba(255,61,87,0.2);
+  color: var(--red);
+}
+
+.signal-exit-corner-badge.timeout {
+  background: rgba(160,160,176,0.2);
+  color: var(--text-secondary);
+}
+
+.signal-valid-badge {
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.signal-valid-badge.purple {
+  background: rgba(156, 39, 176, 0.2);
+  color: #ce93d8;
+}
+
+.signal-valid-badge.blue {
+  background: rgba(74, 158, 255, 0.15);
+  color: var(--accent);
+}
+
+.signal-time-stop-corner {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  max-width: 58%;
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: right;
+  color: #ffab00;
+  background: rgba(255,171,0,0.15);
+  padding: 2px 6px;
+  border-radius: 8px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.signal-pnl-corner {
+  position: static;
+  max-width: 100%;
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 2px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.signal-pnl-corner.positive {
+  color: var(--green);
+  background: rgba(0,200,83,0.2);
+}
+
+.signal-pnl-corner.negative {
+  color: var(--red);
+  background: rgba(255,61,87,0.2);
 }
 
 .signal-row {
@@ -272,6 +373,15 @@ html, body {
   font-size: 13px;
   font-weight: 700;
   line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.signal-stock-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  max-width: 100%;
 }
 
 .signal-status-badge {
@@ -360,7 +470,7 @@ html, body {
 
 .signal-metric-label {
   font-size: 9px;
-  color: var(--text-muted);
+  color: var(--text-primary);
   margin-bottom: 1px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -370,6 +480,7 @@ html, body {
   font-size: 12px;
   font-weight: 600;
   line-height: 1.2;
+  color: var(--text-primary);
 }
 
 .signal-metric-value.green { color: var(--green); }
@@ -998,6 +1109,63 @@ function renderSignals(data) {
     return `<div class="signal-metric"><div class="signal-metric-label">${label}</div><div class="signal-metric-value${valueClass ? ' ' + valueClass : ''}">${value}</div></div>`;
   }
 
+  function timeStopCornerHtml(timeStop) {
+    if (!timeStop) return '';
+    const ts = /\bWIB\s*$/i.test(timeStop.trim()) ? timeStop.trim() : `${timeStop.trim()} WIB`;
+    return `<span class="signal-time-stop-corner">Time Stop ${ts}</span>`;
+  }
+
+  function formatSignedTickLabel(offset) {
+    if (offset == null || offset === 0) return '0 Tick';
+    return offset > 0 ? `+${offset} Tick` : `${offset} Tick`;
+  }
+
+  function validFooterLeftHtml(s) {
+    if (s.status === 'entered') {
+      return `<div class="signal-exit-footer-left">
+        <span class="signal-valid-badge blue">Sudah Entry</span>
+        <span class="signal-valid-badge blue">${formatSignedTickLabel(s.signed_tick_offset)}</span>
+      </div>`;
+    }
+    const ticks = s.tick_to_entry || 0;
+    return `<div class="signal-exit-footer-left">
+      <span class="signal-valid-badge purple">Belum Entry</span>
+      <span class="signal-valid-badge purple">-${ticks} Tick</span>
+    </div>`;
+  }
+
+  function validCardFooterClass(s, footerLeft, tsHtml) {
+    return (footerLeft || tsHtml) ? ' has-exit-footer' : '';
+  }
+
+  function pnlCornerHtml(ul) {
+    if (ul.pnl_amount == null || ul.pnl_percentage == null) return '';
+    const cls = ul.pnl_amount >= 0 ? 'positive' : 'negative';
+    const amtSign = ul.pnl_amount >= 0 ? '+' : '-';
+    const pctSign = ul.pnl_percentage >= 0 ? '+' : '-';
+    const amt = Math.abs(ul.pnl_amount).toLocaleString('en-US');
+    const pct = Math.abs(ul.pnl_percentage).toFixed(1);
+    return `<span class="signal-pnl-corner ${cls}">${amtSign}${amt} (${pctSign}${pct}%)</span>`;
+  }
+
+  function exitTypeCornerHtml(s) {
+    let cls, label;
+    if (s.exit_type === 'TP') { cls = 'tp'; label = 'TP'; }
+    else if (s.exit_type === 'SL') { cls = 'sl'; label = 'SL'; }
+    else { cls = 'timeout'; label = 'TS'; }
+    return `<span class="signal-exit-corner-badge ${cls}">${label} · ${s.exit_time}</span>`;
+  }
+
+  function exitFooterLeftHtml(s, ul) {
+    const parts = [exitTypeCornerHtml(s), pnlCornerHtml(ul)].filter(Boolean);
+    if (!parts.length) return '';
+    return `<div class="signal-exit-footer-left">${parts.join('')}</div>`;
+  }
+
+  function exitCardFooterClass(timeStop, footerLeftHtml) {
+    return (timeStop || footerLeftHtml) ? ' has-exit-footer' : '';
+  }
+
   // Valid signals
   const validContainer = document.getElementById('signals-valid');
   const validHeader = document.querySelector('[data-target="signals-valid"]');
@@ -1007,27 +1175,25 @@ function renderSignals(data) {
 
   let validHtml = '';
   data.signals_valid.forEach(s => {
-    const statusBadge = s.status === 'entered'
-      ? (s.time_stop
-        ? `<span class="signal-status-badge entered">Entry · TS ${s.time_stop}</span>`
-        : `<span class="signal-status-badge entered">Sudah Entry</span>`)
-      : `<span class="signal-status-badge waiting">-${s.tick_to_entry} tick</span>`;
+    const footerLeftHtml = validFooterLeftHtml(s);
+    const tsHtml = timeStopCornerHtml(s.time_stop);
     const ul = getUserLot(s);
 
     validHtml += `
-      <div class="signal-card">
+      <div class="signal-card${validCardFooterClass(s, footerLeftHtml, tsHtml)}">
+        ${footerLeftHtml}
+        ${tsHtml}
         <div class="signal-row">
           <div class="signal-stock">
             <div class="signal-stock-top">
               ${logoHtml(s.stock_code)}
               <span class="signal-stock-code">${s.stock_code}</span>
             </div>
-            ${statusBadge}
           </div>
           ${signalMetric('Entry', formatPrice(s.entry_price))}
           ${signalMetric('Lot', ul.lot.toLocaleString('en-US'))}
-          ${signalMetric('SL', formatPrice(s.sl_price), 'red')}
-          ${signalMetric('TP', formatPrice(s.tp_price), 'green')}
+          ${signalMetric('SL', formatPrice(s.sl_price))}
+          ${signalMetric('TP', formatPrice(s.tp_price))}
         </div>
       </div>`;
   });
@@ -1044,26 +1210,25 @@ function renderSignals(data) {
 
   let exitHtml = '';
   sortedExited.forEach(s => {
-    let badgeClass, badgeText;
-    if (s.exit_type === 'TP') { badgeClass = 'tp'; badgeText = 'TP · ' + s.exit_time; }
-    else if (s.exit_type === 'SL') { badgeClass = 'sl'; badgeText = 'SL · ' + s.exit_time; }
-    else { badgeClass = 'timeout'; badgeText = 'TS · ' + s.exit_time; }
     const ul = getUserLot(s);
+    const tsHtml = timeStopCornerHtml(s.time_stop);
+    const footerLeftHtml = exitFooterLeftHtml(s, ul);
 
     exitHtml += `
-      <div class="signal-card exited">
+      <div class="signal-card exited${exitCardFooterClass(s.time_stop, footerLeftHtml)}">
+        ${footerLeftHtml}
+        ${tsHtml}
         <div class="signal-row">
           <div class="signal-stock">
             <div class="signal-stock-top">
               ${logoHtml(s.stock_code)}
               <span class="signal-stock-code">${s.stock_code}</span>
             </div>
-            <span class="signal-exit-badge ${badgeClass}">${badgeText}</span>
           </div>
           ${signalMetric('Entry', formatPrice(s.entry_price))}
           ${signalMetric('Lot', ul.lot.toLocaleString('en-US'))}
-          ${signalMetric('SL', formatPrice(s.sl_price), 'red')}
-          ${signalMetric('TP', formatPrice(s.tp_price), 'green')}
+          ${signalMetric('SL', formatPrice(s.sl_price))}
+          ${signalMetric('TP', formatPrice(s.tp_price))}
         </div>
       </div>`;
   });
