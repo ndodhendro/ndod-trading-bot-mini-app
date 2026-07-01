@@ -924,7 +924,8 @@ html, body {
 // ===== Configuration =====
 // Supabase Storage public URL — replace with your project URL and bucket name
 const DATA_URL = 'https://yhdnemqdxbsgzbmtgpjj.supabase.co/storage/v1/object/public/ndod-trading-bot/state.json';
-const REFRESH_INTERVAL = 30000; // 30 seconds
+const POLL_INTERVAL_SECONDS = 10;
+const POLL_PHASE_SECOND = 1; // :01, :11, :21, ... — 1s after scanner push (:00/:10/:20/...)
 
 // ===== Tab Navigation =====
 function switchTab(tabName) {
@@ -1302,8 +1303,19 @@ function renderAll(data) {
 // ===== Data Fetching =====
 let lastData = null; // Cache last successful fetch
 
+function getDelayUntilAlignedSlot(intervalSeconds, phaseSecond) {
+  const now = new Date();
+  const t = now.getSeconds() + now.getMilliseconds() / 1000;
+  const epsilon = 0.1;
+  for (let slot = phaseSecond; slot < 60; slot += intervalSeconds) {
+    if (t < slot - epsilon) return (slot - t) * 1000;
+    if (t <= slot + epsilon) return 0;
+  }
+  return (60 - t + phaseSecond) * 1000;
+}
+
 function fetchData() {
-  fetch(DATA_URL + '?t=' + Date.now())
+  return fetch(DATA_URL + '?t=' + Date.now())
     .then(r => r.json())
     .then(data => {
       lastData = data;
@@ -1324,9 +1336,16 @@ function fetchData() {
     });
 }
 
-// Initial fetch + interval
+function scheduleAlignedFetch() {
+  const delay = getDelayUntilAlignedSlot(POLL_INTERVAL_SECONDS, POLL_PHASE_SECOND);
+  setTimeout(() => {
+    fetchData().finally(() => scheduleAlignedFetch());
+  }, delay);
+}
+
+// Immediate load, then clock-aligned poll (:01/:11/:21/...)
 fetchData();
-setInterval(fetchData, REFRESH_INTERVAL);
+scheduleAlignedFetch();
 initCollapsibles();
 </script>
 </body>
